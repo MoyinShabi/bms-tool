@@ -11,7 +11,7 @@ void calcWattHourForOneCell(double cellVoltRating, double cellCurrentVal, double
 void calcNoOfCellsNeeded(double wattHourOfLoad, double wattHourForOneCell, double& noOfCellsNeeded);
 
 int main() {
-	cout << "-------------Welcome to this Program------------" << endl << endl;
+	cout << "BATTERY PACK MANAGEMENT SYSTEM CALCULATOR SOFTWARE" << endl << endl;
 
 	char currentRatingChoice;
 	char cellVoltRatingChoice;
@@ -20,7 +20,9 @@ int main() {
 	double loadWhRating;
 	int loadTime;
 
-	double cellVoltageRating;
+	double cellLVoltRating;
+	double cellNVoltRating;
+	double cellUVoltRating;
 	double cellmAHRating;
 	double cellCurrentVal;
 
@@ -35,7 +37,7 @@ int main() {
 	double noOfCellsNeeded;
 
 
-	cout << "------ENTER YOUR LOAD RATING------" << endl;
+	cout << "---------ENTER YOUR LOAD RATING---------" << endl;
 	cout << "Load Voltage Rating (V): ";
 	cin >> loadVoltageRating;
 	while (true)
@@ -64,18 +66,24 @@ int main() {
 	cin >> loadTime;
 	cout << endl << endl;
 
-	cout << "------ENTER YOUR CELL RATING------" << endl;
+	cout << "---------ENTER YOUR CELL RATING---------" << endl;
 	while (true)
 	{
-		cout << "Type 'Y' for default cell lower voltage threshold rating rating (2.5V) and 'N' for custom rating: ";
+		cout << "Type 'Y' for default cell lower voltage threshold rating (2.5V for lithium-ion cell) and 'N' for custom rating: ";
 		cin >> cellVoltRatingChoice;
 		if (cellVoltRatingChoice == 'Y' || cellVoltRatingChoice == 'y') {
-			cellVoltageRating = 2.5;
+			cellLVoltRating = 2.5;
+			cellNVoltRating = 3.7;
+			cellUVoltRating = 4.2;
 			break;
 		}
 		else if (cellVoltRatingChoice == 'N' || cellVoltRatingChoice == 'n') {
 			cout << "Cell lower voltage threshold rating (V): ";
-			cin >> cellVoltageRating;
+			cin >> cellLVoltRating;
+			cout << "Cell nominal voltage threshold rating (V): ";
+			cin >> cellNVoltRating;
+			cout << "Cell upper voltage threshold rating (V): ";
+			cin >> cellUVoltRating;
 			break;
 		}
 		else {
@@ -90,12 +98,12 @@ int main() {
 	cellCurrentVal = cellmAHRating * pow(10, -3);
 	initCellCurrent = ceil(loadCurrentRating / cellCurrentVal);
 
-	calcNoOfCells(loadVoltageRating, cellVoltageRating, initNoOfCells);
-	calcTotalCellVoltage(initNoOfCells, cellVoltageRating, totalCellVoltage);
+	calcNoOfCells(loadVoltageRating, cellLVoltRating, initNoOfCells);
+	calcTotalCellVoltage(initNoOfCells, cellLVoltRating, totalCellVoltage);
 	calcTotalCellCurrent(initCellCurrent, cellCurrentVal, totalCellCurrent);
 	calcTotalCellTime(loadTime, totalCellTime);
 	calcWattHourOfLoad(totalCellVoltage, totalCellCurrent, totalCellTime, wattHourOfLoad);
-	calcWattHourForOneCell(cellVoltageRating, cellCurrentVal, wattHourForOneCell);
+	calcWattHourForOneCell(cellLVoltRating, cellCurrentVal, wattHourForOneCell);
 	calcNoOfCellsNeeded(wattHourOfLoad, wattHourForOneCell, noOfCellsNeeded);
 
 
@@ -107,19 +115,30 @@ int main() {
 	cout << totalCellTime << endl;
 	cout << wattHourForOneCell << endl;
 	cout << wattHourOfLoad << endl;*/
+	
+	cout << "--------------------------------------------------------------------------------------" << endl << endl;
+	cout << "Number of cells needed in the battery pack to support the load requirement: " << noOfCellsNeeded << endl << endl;
+	cout << "Total voltage (for the " << noOfCellsNeeded << " cells): " << endl;
+	cout << noOfCellsNeeded << " x " << cellLVoltRating << " = " << (noOfCellsNeeded * cellLVoltRating) << "V (at low voltage)" << endl;
+	cout << noOfCellsNeeded << " x " << cellNVoltRating << " = " << (noOfCellsNeeded * cellNVoltRating) << "V (at nominal voltage)" << endl;
+	cout << noOfCellsNeeded << " x " << cellUVoltRating << " = " << (noOfCellsNeeded * cellUVoltRating) << "V (at full charge)" << endl << endl;
 
-	cout << "----------------------------------------------------------------------------------------------------------------" << endl << endl;
-	cout << "The number of cells needed in the battery pack to support the load requirement is: " << noOfCellsNeeded << endl;
-	cout << "The recommended battery configuration is: " << initNoOfCells << "s" << initCellCurrent << "p" << endl;
-	cout << "The recommended battery pack configuration is: " << totalCellTime << " x " << initNoOfCells << "s" << initCellCurrent << "p" << endl;
-	cout << "Recommended BMS to use is: " << initNoOfCells << "s" << " BMS" << endl;
+	cout << "The recommended battery configuration: " << initNoOfCells << "s" << initCellCurrent << "p" << endl;
+	cout << "The recommended battery pack configuration: " << totalCellTime << " x " << initNoOfCells << "s" << initCellCurrent << "p" << endl;
+	cout << "Recommended BMS to use: " << initNoOfCells << "s" << " BMS" << endl;
 	cout << "Number of BMSs to use in battery: " << initCellCurrent << "p" << " = " << totalCellTime << " x " << initNoOfCells << "s" << endl;
 	cout << "The total number of BMSs (for the whole battery pack): " << totalCellTime << " x " << "(" << initCellCurrent << " x " << initNoOfCells << "s BMS)" << " = " << (totalCellTime * initCellCurrent) << " BMS" << endl;
-	cout << "The recommended number of BMSs to use: " << (totalCellTime * initCellCurrent) << endl;
+	cout << "The recommended number of BMSs to use: " << (totalCellTime * initCellCurrent) << endl << endl;
 
-	cout << "Additional Recommendations: " << endl;
+	cout << "--------------------------------------------------------------------------------------" << endl << endl;
+	cout << "ADDITIONAL RECOMMENDATIONS " << endl << endl;
+	cout << "Use a buck converter with the folowing requirements in the design of the battery pack: " << endl;
+	cout << "Buck converter input voltage: >= " << floor(noOfCellsNeeded * cellUVoltRating) << "V" << endl;
+	cout << "Buck converter output voltage: = " << 5 << "V (for common loads)" << endl;
+	cout << "Buck converter current rating: >= " << loadCurrentRating << "V" << endl << endl;
 
-
+	cout << "Use a power supply charger with the folowing requirements: " << endl;
+	cout << "Voltge rating: >= " << floor(2 * cellUVoltRating) << "V" << endl;
 	system("pause");
 	return 0;
 }
@@ -150,7 +169,7 @@ void calcWattHourForOneCell(double cellVoltRating, double cellCurrentVal, double
 }
 
 void calcNoOfCellsNeeded(double wattHourOfLoad, double wattHourForOneCell, double& noOfCellsNeeded) {
-	noOfCellsNeeded = ceil(wattHourOfLoad / wattHourForOneCell);
+	noOfCellsNeeded = (wattHourOfLoad / wattHourForOneCell) == (int)(wattHourOfLoad / wattHourForOneCell) ? (wattHourOfLoad / wattHourForOneCell) : ceil(wattHourOfLoad / wattHourForOneCell);
 }
 
 
